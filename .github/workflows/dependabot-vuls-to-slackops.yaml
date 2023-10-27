@@ -17,6 +17,7 @@ jobs:
       contents: "read"
       id-token: "write"
     runs-on: ubuntu-latest
+    # The outputs statement here is only required if you share output values between jobs which is less secure than using a shared job with multiple steps
     outputs:
       webhook: ${{ steps.get-secret-secret.outputs.webhook }}
       pat: ${{ steps.get-secret-secret.outputs.pat }}
