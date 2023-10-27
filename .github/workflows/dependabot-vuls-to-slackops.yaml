@@ -47,6 +47,6 @@ jobs:
         name: "Notify Vulnerabilities"
         uses: kunalnagarco/action-cve@ab8c75b65a683a41ec048d0a160b69253d8cccf8 # v1.7.65
         with:
-          token: "${{ steps.get-secret.outputs.webhook }}" # Named the same in GH PATs
-          slack_webhook: "${{ steps.get-secret.outputs.pat }}" #sec-github-notifications
+          slack_webhook: "${{ steps.get-secret.outputs.webhook }}" # Named the same in GH PATs
+          token: "${{ steps.get-secret.outputs.pat }}" #sec-github-notifications
           count: 10
