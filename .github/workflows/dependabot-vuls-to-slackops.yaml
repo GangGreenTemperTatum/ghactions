@@ -1,0 +1,52 @@
+# Obtain the webhook and GitHub fine-grained token from GCP Secrets Manager
+name: "dependabot-vulns-fetch-secret"
+run-name: Fetch SIRT-Bot Dependabot vulnerabilities notification to SlackOps
+on:
+  schedule:
+    - cron: "0 10 * * 1" # Cron
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/dependabot-vuls-to-slack-sirt-bot.yaml"
+
+jobs:
+  dependabot-to-slack:
+    name: Fetch GCP Secrets & Dependabot SlackOps
+    permissions:
+      contents: "read"
+      id-token: "write"
+    runs-on: ubuntu-latest
+    outputs:
+      webhook: ${{ steps.get-secret-secret.outputs.webhook }}
+      pat: ${{ steps.get-secret-secret.outputs.pat }}
+    steps:
+      - id: "auth"
+        name: "Authenticate to GCP <domain>"
+        uses: "google-github-actions/auth@v1"
+        with:
+          workload_identity_provider: projects/<project_id>/locations/global/workloadIdentityPools/gha-dependabot-vulnerabilities/providers/gha-dependabot-vulnerabilities
+          service_account: gha-dependabot-vulns@<domain>.iam.gserviceaccount.com
+      - id: "get-secret"
+        name: "Gather GCP secrets manager entries"
+        uses: "google-github-actions/get-secretmanager-secrets@v1"
+        with:
+          secrets: |-
+            webhook:projects/<project_id>/secrets/<secret_id>/versions/latest
+            pat:projects/<project_id>/secrets/<secret_id>/versions/latest
+      - id: "verify-secret"
+        name: "Test printing the secret redacted to ensure valid"
+        env:
+          WEBHOOK: "${{ steps.secrets.outputs.webhook }}"
+          PAT: "${{ steps.secrets.outputs.pat }}"
+        run: |
+          [ -z "${{ steps.get-secret.outputs.webhook }}" ] && echo "webhook is empty" || echo "webhook is ok";
+          [ -z "${{ steps.get-secret.outputs.pat }}" ] && echo "pat is empty" || echo "pat is ok";
+# Once secrets are obtained, use these to post automated Slack notification
+      - id: "dependabot-to-slack"
+        name: "Notify Vulnerabilities"
+        uses: kunalnagarco/action-cve@ab8c75b65a683a41ec048d0a160b69253d8cccf8 # v1.7.65
+        with:
+          token: "${{ steps.get-secret.outputs.webhook }}" # Named the same in GH PATs
+          slack_webhook: "${{ steps.get-secret.outputs.pat }}" #sec-github-notifications
+          count: 10
