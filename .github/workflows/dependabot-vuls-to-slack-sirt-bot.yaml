@@ -28,6 +28,7 @@ jobs:
         with:
           workload_identity_provider: projects/<project_id>/locations/global/workloadIdentityPools/gha-dependabot-vulnerabilities/providers/gha-dependabot-vulnerabilities
           service_account: gha-dependabot-vulns@<domain>.iam.gserviceaccount.com
+      # Before this step to succeed, ensure the GCP Workload Identity Pools Attribute Conditions contains the repository name in CEL expression format - I.E "[attribute.repository in ['my-org/my-repo']]"
       - id: "get-secret"
         name: "Gather GCP secrets manager entries"
         uses: "google-github-actions/get-secretmanager-secrets@v1"
