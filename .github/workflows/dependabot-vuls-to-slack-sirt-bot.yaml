@@ -38,9 +38,6 @@ jobs:
             pat:projects/<project_id>/secrets/<secret_id>/versions/latest
       - id: "verify-secret"
         name: "Test printing the secret redacted to ensure valid"
-        env:
-          WEBHOOK: "${{ steps.get-secret.outputs.webhook }}"
-          PAT: "${{ steps.get-secret.outputs.pat }}"
         run: |
           [ -z "${{ steps.get-secret.outputs.webhook }}" ] && echo "webhook is empty" || echo "webhook is ok";
           [ -z "${{ steps.get-secret.outputs.pat }}" ] && echo "pat is empty" || echo "pat is ok";
