@@ -37,13 +37,14 @@ jobs:
             webhook:projects/<project_id>/secrets/<secret_id>/versions/latest
             pat:projects/<project_id>/secrets/<secret_id>/versions/latest
       - id: "verify-secret"
+        name: "Test printing the secret redacted to ensure valid"
         env:
-          WEBHOOK: "${{ steps.secrets.outputs.webhook }}"
-          PAT: "${{ steps.secrets.outputs.pat }}"
-        # Print obfuscated secret ending values to verify successful
+          WEBHOOK: "${{ steps.get-secret.outputs.webhook }}"
+          PAT: "${{ steps.get-secret.outputs.pat }}"
         run: |
-          printf "${{ steps.get-secret.outputs.webhook }}" | tail -c 3 && printf "${{ steps.get-secret.outputs.pat }}" | tail -c 3
-
+          [ -z "${{ steps.get-secret.outputs.webhook }}" ] && echo "webhook is empty" || echo "webhook is ok";
+          [ -z "${{ steps.get-secret.outputs.pat }}" ] && echo "pat is empty" || echo "pat is ok";
+          
   # Once secrets are obtained, use these to post automated Slack notification
   dependabot-to-slack:
     needs: [get-secret]
