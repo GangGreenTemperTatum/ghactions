@@ -1,0 +1,19 @@
+# Obtain the webhook and GitHub fine-grained token from GCP Secrets Manager
+name: "dependabot-vulns-fetch-secret"
+run-name: Fetch SIRT-Bot Dependabot vulnerabilities notification to SlackOps
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 9 * * 1-5" # Cron
+
+jobs:
+  dependabot-to-slack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Notify repo vulnerabilities to secops Slack channel
+        uses: ganggreentempertatum/actions/dependabot-vulns-to-slack@main
