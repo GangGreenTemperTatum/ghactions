@@ -1,0 +1,38 @@
+# Obtain the webhook and GitHub fine-grained token from GCP Secrets Manager
+name: "dependabot-vulns-fetch-secret"
+description: fetch deployed repo dependabot vulns and sends notification to sec SlackOps
+
+runs:
+  using: composite
+  steps:
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@a6e2e39c0a0331da29f7fd2c2a20a427e8d3ad1f # v2.1.1
+      with:
+        workload_identity_provider: projects/<gcp-project-id>/locations/global/workloadIdentityPools/gha-dependabot-vulnerabilities/providers/gha-dependabot-vulnerabilities
+        service_account: gha-dependabot-vulns@<gcp-project>.iam.gserviceaccount.com
+    - name: Get secrets from Google SecretManager
+      id: secrets
+      uses: google-github-actions/get-secretmanager-secrets@61067887622dee4939d68e379b4264a57534fdf6 # v2.1.0
+        secrets: |-
+          webhook:projects/<gcp-project-id>/secrets/sirt_bot_slack_webhook_sec_github_notifications/versions/latest
+          pat:projects/<gcp-project-id>/secrets/github_token_dependabot_alerts_sirt_bot_slack_ops/versions/latest
+    - name: "verify-secrets"
+      shell: bash
+      env:
+        WEBHOOK: "${{ steps.secrets.outputs.webhook }}"
+        PAT: "${{ steps.secrets.outputs.pat }}"
+      run: |
+    - name: Validate secrets
+      shell: bash
+      env:
+        WEBHOOK: "${{ steps.secrets.outputs.webhook }}"
+        PAT: "${{ steps.secrets.outputs.pat }}"
+      run: |
+        : ${WEBHOOK?webhook is empty}
+        : ${PAT?pat is empty}
+    - name: Send Dependabot Vulnerability Alerts to Slack
+      uses: kunalnagarco/action-cve@d7c6fbddc4b61145b39805abe1738df7da054835 # v1.9.6
+      with:
+        slack_webhook: "${{ steps.secrets.outputs.webhook }}" # Named the same in GH PATs
+        token: "${{ steps.secrets.outputs.pat }}" #sec-github-notifications
+        count: 10
