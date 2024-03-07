@@ -4,6 +4,13 @@ run-name: Fetch SIRT-Bot Dependabot vulnerabilities notification to SlackOps
 
 on:
   workflow_dispatch: {}
+  # test specific branch deployment before merging to prevent multiple prs
+  pull_request:
+    branches:
+      - ads/test-dependabot-sirt-bot-workflow-in-actions-repo-add-auth
+  push:
+    branches:
+      - ads/test-dependabot-sirt-bot-workflow-in-actions-repo-add-auth
   schedule:
     - cron: "0 9 * * 1-5" # Cron
 
@@ -15,5 +22,7 @@ jobs:
       id-token: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Notify repo vulnerabilities to secops Slack channel
         uses: ganggreentempertatum/actions/dependabot-vulns-to-slack@main
