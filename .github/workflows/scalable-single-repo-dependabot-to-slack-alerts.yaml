@@ -1,0 +1,37 @@
+# Alternative approach to run this from a single repo in the org, therefore remove GCP API for complexity as only single repository-level secrets.. rather than individual repo's making calls to GCP API and thus increasing WLID scope
+name: "scalable-single-repo-dependabot-to-slack-alerts"
+run-name: Fetch SIRT-Bot Dependabot vulnerabilities notification to SlackOps
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 9 * * 1-5" # Cron
+
+jobs:
+  dependabot-to-slack:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repository:
+          - <company>/<repo>
+          # ...
+          - <company>/<repo>
+
+    steps:
+      - name: Fetch CI GitHub App token
+        id: fetch-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        with:
+          app_id: ${{ secrets.CI_GH_APP_ID }}
+          private_key: ${{ secrets.CI_GH_APP_PRIVATE_KEY }}
+
+      - name: Send Dependabot Vulnerability Alerts to Slack
+        uses: kunalnagarco/action-cve@d7c6fbddc4b61145b39805abe1738df7da054835 # v1.9.6
+        with:
+          slack_webhook: ${{ secrets.SIRT_BOT_SLACK_WEBHOOK }}
+          token: ${{ steps.fetch-token.outputs.token }}
+          count: 10
+        env:
+          GITHUB_REPOSITORY: ${{ matrix.repository }}
