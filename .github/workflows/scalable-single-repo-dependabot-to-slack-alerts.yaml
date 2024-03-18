@@ -1,4 +1,6 @@
 # Alternative approach to run this from a single repo in the org, therefore remove GCP API for complexity as only single repository-level secrets.. rather than individual repo's making calls to GCP API and thus increasing WLID scope
+# note: The matrix can be populated by hand, or with a discovery pre-job based on custom properties for example
+
 name: "scalable-single-repo-dependabot-to-slack-alerts"
 run-name: Fetch SIRT-Bot Dependabot vulnerabilities notification to SlackOps
 
